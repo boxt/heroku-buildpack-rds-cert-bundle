@@ -1,0 +1,25 @@
+#!/bin/sh
+
+OUTPUT_DIR=$1
+BUNDLE_URL=https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
+
+curl $BUNDLE_URL -o $OUTPUT_DIR/rds-cert-bundle.pem
+if command -v openssl >/dev/null 2>&1; then
+    openssl x509 -in "$OUTPUT_DIR/rds-cert-bundle.pem" -text -noout >/dev/null 2>&1
+    if [ $? -ne 0 ]; then
+        echo "Downloaded certificate bundle is invalid."
+        exit 1
+    fi
+
+    expiry_date=$(openssl x509 -in "$OUTPUT_DIR/rds-cert-bundle.pem" -noout -enddate | cut -d= -f2)
+    if [ -n "$expiry_date" ]; then
+        echo "Certificate bundle expires on: $expiry_date"
+    else
+        echo "Could not determine certificate expiry date."
+    fi
+else
+    echo "openssl not found; exiting."
+    exit 1
+fi
+
+exit $?
