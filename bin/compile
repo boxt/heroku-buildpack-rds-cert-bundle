@@ -16,6 +16,7 @@ if command -v openssl >/dev/null 2>&1; then
         echo "Certificate bundle expires on: $expiry_date"
     else
         echo "Could not determine certificate expiry date."
+        exit 1
     fi
 else
     echo "openssl not found; exiting."
